@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Roulette Casino</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle, #111 0%, #222 100%);
+  color: #fff;
+  text-align: center;
+  overflow: hidden;
+}
+h1 {
+  color: gold;
+  text-shadow: 0 0 20px yellow, 0 0 40px orange;
+  margin-top: 20px;
+}
+#rouletteCanvas {
+  background: #111;
+  border-radius: 50%;
+  display: block;
+  margin: 20px auto;
+  box-shadow: 0 0 30px #0ff inset, 0 0 20px #fff;
+}
+#controls {
+  margin-top: 20px;
+}
+select, input, button {
+  font-size: 16px;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 5px;
+  border: none;
+}
+#spinBtn {
+  background: orange;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 20px yellow;
+  animation: pulse 1s infinite alternate;
+  transition: transform 0.1s;
+}
+#spinBtn:active {
+  transform: scale(0.95);
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 10px yellow; transform: scale(1); }
+  100% { box-shadow: 0 0 25px gold; transform: scale(1.05);}
+}
+#balance {
+  font-size: 20px;
+  margin-top: 10px;
+  text-shadow: 0 0 10px lime;
+}
+#result {
+  margin-top: 15px;
+  font-size: 22px;
+  color: gold;
+  text-shadow: 0 0 10px yellow;
+}
+#history {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+.history-item {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+}
+</style>
+</head>
+<body>
+
+<h1>🎰 Roulette Casino 🎰</h1>
+<canvas id="rouletteCanvas" width="400" height="400"></canvas>
+
+<div id="controls">
+  <label>Color:</label>
+  <select id="colorSelect">
+    <option value="red">Red</option>
+    <option value="black">Black</option>
+    <option value="green">Green</option>
+  </select>
+
+  <label>Amount:</label>
+  <input id="betAmount" type="number" min="1" value="100">
+
+  <button id="spinBtn">Spin</button>
+</div>
+
+<div id="balance">Balance: 100000</div>
+<div id="result"></div>
+<div id="history"></div>
+<canvas id="confettiCanvas" width="400" height="400" style="position:absolute; top:0; left:50%; transform:translateX(-50%); pointer-events:none;"></canvas>
+
+<script>
+const canvas = document.getElementById("rouletteCanvas");
+const ctx = canvas.getContext("2d");
+const radius = canvas.width/2;
+const segments = 37; // 0-36
+let angle = 0;
+let spinning = false;
+let balance = 100000;
+const history = [];
+
+const confettiCanvas = document.getElementById("confettiCanvas");
+const confettiCtx = confettiCanvas.getContext("2d");
+let confettiParticles = [];
+
+function numberColor(n){
+  if(n===0) return "green";
+  return (n%2===0)?"black":"red";
+}
+
+function drawWheel(highlightIndex=-1){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Неоновая рамка
+  ctx.save();
+  ctx.shadowColor = '#0ff';
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.arc(radius,radius,radius-5,0,Math.PI*2);
+  ctx.strokeStyle='#0ff';
+  ctx.lineWidth = 5;
+  ctx.stroke();
+  ctx.restore();
+
+  for(let i=0;i<segments;i++){
+    const start = (i*2*Math.PI/segments)+angle;
+    const end = ((i+1)*2*Math.PI/segments)+angle;
+    let color = numberColor(i);
+    if(i===highlightIndex) color="yellow";
+    ctx.beginPath();
+    ctx.moveTo(radius,radius);
+    ctx.arc(radius,radius,radius-10,start,end);
+    ctx.fillStyle=color;
+    ctx.fill();
+    ctx.strokeStyle="#333";
+    ctx.stroke();
+  }
+
+  ctx.beginPath();
+  ctx.arc(radius,radius,40,0,2*Math.PI);
+  ctx.fillStyle="#222";
+  ctx.fill();
+  ctx.stroke();
+}
+
+function easeOutCubic(t){return (--t)*t*t+1;}
+
+function spinWheel(winIndex, callback){
+  spinning = true;
+  const startAngle = angle;
+  const spinTimeTotal = 400+Math.random()*2000;
+  let elapsed = 0;
+  const targetAngle = startAngle + 10*Math.PI + (2*Math.PI/segments)*winIndex;
+
+  function animate(){
+    elapsed += 16;
+    const progress = Math.min(elapsed/spinTimeTotal,1);
+    angle = startAngle + (targetAngle-startAngle)*easeOutCubic(progress);
+    drawWheel();
+    if(progress<1) requestAnimationFrame(animate);
+    else {
+      angle = targetAngle%(2*Math.PI);
+      drawWheel(winIndex);
+      callback();
+      spinning=false;
+    }
+  }
+  animate();
+}
+
+// История
+function updateHistory(number){
+  history.push(number);
+  if(history.length>10) history.shift();
+  const historyDiv = document.getElementById("history");
+  historyDiv.innerHTML = '';
+  history.forEach(n=>{
+    const div = document.createElement("div");
+    div.className = 'history-item';
+    div.style.backgroundColor = numberColor(n);
+    historyDiv.appendChild(div);
+  });
+}
+
+// Конфетти
+function launchConfetti(){
+  confettiParticles = [];
+  for(let i=0;i<100;i++){
+    confettiParticles.push({
+      x: Math.random()*600,
+      y: -10,
+      vx: Math.random()*4-2,
+      vy: Math.random()*3+2,
+      color: ['red','green','blue','yellow','orange'][Math.floor(Math.random()*5)]
+    });
+  }
+  function render(){
+    confettiCtx.clearRect(0,0,400,400);
+    confettiParticles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      confettiCtx.fillStyle = p.color;
+      confettiCtx.fillRect(p.x,p.y,5,5);
+    });
+    confettiParticles = confettiParticles.filter(p=>p.y<400);
+    if(confettiParticles.length>0) requestAnimationFrame(render);
+  }
+  render();
+}
+
+// Логика игры
+function playRoulette(betColor, betAmount){
+  if(betAmount>balance){
+    return {text:"Not enough balance"};
+  }
+  balance -= betAmount;
+
+  const number = Math.floor(Math.random()*37);
+  const resultColor = number===0?"green":(number%2===0?"black":"red");
+
+  let win=0;
+  if(betColor===resultColor){
+    win=resultColor==="green"?betAmount*17:betAmount*2;
+    win*=(1-0.13);
+    balance += win;
+  }
+
+  return {
+    number,
+    color: resultColor,
+    win,
+    balance,
+    text:`Number: ${number} | Color: ${resultColor} | Win: ${win.toFixed(2)} | Balance: ${balance.toFixed(2)}`,
+    winAmount: win
+  };
+}
+
+// Мигающий баланс
+function flashBalance(win){
+  const el = document.getElementById('balance');
+  let count=0;
+  const maxCount=6;
+  const interval = setInterval(()=>{
+    el.style.color = (count%2===0)?(win? 'lime':'red'):'#fff';
+    count++;
+    if(count>maxCount) clearInterval(interval);
+  },300);
+}
+
+// Кнопка Spin
+document.getElementById("spinBtn").addEventListener("click", ()=>{
+  if(spinning) return;
+  const color = document.getElementById("colorSelect").value;
+  const amount = parseFloat(document.getElementById("betAmount").value);
+
+  const result = playRoulette(color, amount);
+  document.getElementById("result").innerText="";
+
+  spinWheel(result.number, ()=>{
+    // показываем результат
+    document.getElementById("result").innerText = result.text;
+    document.getElementById("balance").innerText = "Balance: " + result.balance.toFixed(2);
+    flashBalance(result.win>0);
+    if(result.win>0) launchConfetti();
+
+    // обновляем историю **после анимации**
+    updateHistory(result.number);
+  });
+});
+
+// начальный рендер
+drawWheel();
+</script>
+
+</body>
+</html>
