@@ -35,7 +35,8 @@
 ---
 
 ## Диаграмма классов с паттерном **Фасад**
-<img width="869" height="411" alt="image" src="https://github.com/user-attachments/assets/476deabb-2385-459b-b4b1-8a6fd19e943e" />
+<img width="865" height="413" alt="image" src="https://github.com/user-attachments/assets/9d0a4f61-6eaf-4b9b-acdf-f50ece8c8e60" />
+
 
 ---
 
