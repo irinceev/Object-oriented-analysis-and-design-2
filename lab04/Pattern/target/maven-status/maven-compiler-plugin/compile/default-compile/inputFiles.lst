@@ -1,0 +1,7 @@
+C:\Users\Пользователь\Desktop\ООАП4\Pattern\src\main\java\App.java
+C:\Users\Пользователь\Desktop\ООАП4\Pattern\src\main\java\client\Notifier.java
+C:\Users\Пользователь\Desktop\ООАП4\Pattern\src\main\java\factory\NotificationFactory.java
+C:\Users\Пользователь\Desktop\ООАП4\Pattern\src\main\java\implementations\ConsoleNotification.java
+C:\Users\Пользователь\Desktop\ООАП4\Pattern\src\main\java\implementations\EmailNotification.java
+C:\Users\Пользователь\Desktop\ООАП4\Pattern\src\main\java\implementations\TelegramNotification.java
+C:\Users\Пользователь\Desktop\ООАП4\Pattern\src\main\java\interfaces\INotification.java
