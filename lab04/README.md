@@ -34,40 +34,7 @@
 
 ## Диаграмма классов с паттерном **Separated Interface**
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  «interface»                                                    │
-│  interfaces.INotification                                       │
-│  + send(message: String): void                                  │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │ implements
-          ┌─────────────────┼──────────────────┐
-          ▼                 ▼                  ▼
-┌──────────────────┐ ┌──────────────────┐ ┌──────────────────────┐
-│ ConsoleNotif...  │ │ EmailNotif...    │ │ TelegramNotif...     │
-│ + send(msg)      │ │ + send(msg)      │ │ + send(msg)          │
-└──────────────────┘ └──────────────────┘ └──────────────────────┘
-          ▲                 ▲                  ▲
-          └─────────────────┼──────────────────┘
-                            │ creates
-                 ┌──────────────────────┐
-                 │ NotificationFactory  │
-                 │ + create(type):      │
-                 │   INotification      │
-                 └──────────┬───────────┘
-                            │
-                 ┌──────────▼───────────┐
-                 │       App            │
-                 │ (Swing UI)           │
-                 └──────────┬───────────┘
-                            │ uses
-                 ┌──────────▼───────────┐
-                 │       Notifier       │
-                 │ + notify(sender:     │
-                 │   INotification,     │
-                 │   message: String)   │
-                 └──────────────────────┘
-```
+<img width="1231" height="347" alt="image" src="https://github.com/user-attachments/assets/8597943d-ef1f-4ebd-8dca-5a22f58dac46" />
 
 ---
 
